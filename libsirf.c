@@ -6,7 +6,7 @@ sirf_rheader* sirf_find_record(sird* data, char* name) {
 	for (uint32_t i = 0; i < data->recordcnt; i++) {
 
 		char* rname = (char*) (at + sizeof(sirf_rheader));
-		if (strcmp(name, rname)) {
+		if (strcmp(name, rname) == 0) { // 0 for equality.
 			return at;
 		} else {
 			at += sirf_total_size(at); // 1 for null terminator.
