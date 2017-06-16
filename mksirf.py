@@ -38,7 +38,7 @@ with open(dest, 'wb') as output:
             size = paths.getsize(rpath)
             header = struct.pack('>QH', size, len(r))
             output.write(header)
-            output.write(unicode(r, 'utf-8'))
+            output.write(unicode(r, 'utf-8') + b'\x00')
             with open(rpath, 'rb') as rec:
                 if verbose:
                     print r
