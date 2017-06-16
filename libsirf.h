@@ -18,3 +18,5 @@ typedef struct sirf_record_header_t sirf_rheader;
 sirf_rheader* sirf_find_record(sird* data, char* name);
 void* sirf_record(sird* data, char* name);
 void* sirf_index(sird* data, uint64_t index);
+
+#define sirf_total_size(recptr) (sizeof(sirf_rheader) + recptr->size + recptr->namelen + 1)

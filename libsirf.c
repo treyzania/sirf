@@ -9,7 +9,7 @@ sirf_rheader* sirf_find_record(sird* data, char* name) {
 		if (strcmp(name, rname)) {
 			return at;
 		} else {
-			at += sizeof(sirf_rheader) + at->namelen + at->size + 1; // 1 for null terminator.
+			at += sirf_total_size(at); // 1 for null terminator.
 		}
 
 	}
@@ -33,9 +33,9 @@ void* sirf_index(sird* data, uint64_t index) {
 
 	sirf_rheader* at = (sirf_rheader*) (data + sizeof(sird));
 	for (uint64_t i; i <= index; i++) { // le because we actually want what's right after it.
-		at += sizeof(sirf_rheader) + at->namelen + at->size + 1;
+		at += sirf_total_size(at);
 	}
 
-	return (void*) at; // cast because we've actually gone over.
+	return (void*) at; // cast because we've actually o
 
 }
