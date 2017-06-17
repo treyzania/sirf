@@ -2,7 +2,7 @@
 
 sirf_rheader* sirf_find_record(sird* data, char* name) {
 
-	sirf_rheader* at = (sirf_rheader*) (data + sizeof(sird));
+	sirf_rheader* at = (sirf_rheader*) (data + 1);
 	for (uint32_t i = 0; i < data->recordcnt; i++) {
 
 		char* rname = (char*) (at + sizeof(sirf_rheader));
@@ -21,7 +21,7 @@ sirf_rheader* sirf_find_record(sird* data, char* name) {
 void* sirf_get_data(sird* data, char* name) {
 
 	sirf_rheader* rec = sirf_find_record(data, name);
-	return (void*) (rec + rec->namelen + 1); // 1 for null terminator.
+	return ((void*) rec) + rec->namelen + 1; // 1 for null terminator.
 
 }
 
@@ -31,11 +31,11 @@ void* sirf_index(sird* data, uint64_t index) {
 		return NULL;
 	}
 
-	sirf_rheader* at = (sirf_rheader*) (data + sizeof(sird));
+	sirf_rheader* at = (sirf_rheader*) (data + 1);
 	for (uint64_t i; i <= index; i++) { // le because we actually want what's right after it.
 		at += sirf_total_size(at);
 	}
 
-	return (void*) at; // cast because we've actually o
+	return (void*) at; // Cast because we've actually overshot it and are here.
 
 }
