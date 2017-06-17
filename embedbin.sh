@@ -13,15 +13,15 @@ end_lbl=$name'_end'
 size_lbl=$name'_len'
 size=$(ls $file | awk '{ print $5; }')
 
-echo -e "\
-\t.section .data\n\
-\t.globl $name\n\
-\t.globl $end_lbl\n\
-\t.globl $size_lbl\n\
-$name:\n\
-\t.incbin \"$file\"\n\
-$end_lbl:\n\
-\t.byte 0\n\
-$size_lbl:\n\
-\t.long $size\n" \
-| gcc -c -x assembler -o $dest -
+echo -e "
+	.section .data
+	.globl $name
+	.globl $end_lbl
+	.globl $size_lbl
+$name:
+	.incbin \"$file\"
+$end_lbl:
+	.byte 0
+$size_lbl:
+	.long $size
+" | gcc -c -x assembler -o $dest -
