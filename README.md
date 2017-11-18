@@ -13,15 +13,7 @@ are supposed to be named with POSIX paths.
 archive.  It is named the same as the directory name, but with the `.sird`
 extension atteched onto the end.
 
-## libsirf.c
-
-It's a library for interacting with SIRF files that are already loaded into
-memory.  It doesn't matter if they're `mmap`ed into memory or if they are
-already loaded as part of the binary.
-
-This goes very well with `embedbin.sh`, as you should see.
-
-## embedbin.sh
+          ## embedbin.sh
 
 A shell script to turn arbitrary files (in this case, sirf data) into object
 files that can be referenced by C code.  It's a little bit strange, but it's
@@ -42,21 +34,3 @@ extern uint8_t foo; // char or unsigned char also work, depending on your data
 extern uint8_t foo_end; // Should always be 0, but here for reasons.
 extern uint32_t foo_size;
 ```
-
-Since these are not pointers, you have to take "address of" for some things.
-
-```c
-#include <stdio.h>
-
-// plaintext.o
-extern char plaintext;
-extern uint32_t plaintext_size;
-
-int main(void) {
-	printf("%i bytes: %s", plaintext_size, &plaintext); // Note the &.
-	return 0;
-}
-```
-
-This couples well with `libsirf` as you can just say `sirf_record(&foo, "bar")`
-to get the record "bar" from whatever sird data is loaded at `foo`.
