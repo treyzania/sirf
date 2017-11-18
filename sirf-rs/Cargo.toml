@@ -1,0 +1,6 @@
+[package]
+name = "sirf"
+version = "0.1.0"
+authors = ["Milo <iitalics@gmail.com>", "Trey"]
+
+[dependencies]
