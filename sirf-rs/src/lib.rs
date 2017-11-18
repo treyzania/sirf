@@ -1,3 +1,4 @@
+extern crate byteorder;
 
 /// A SIRD record, based from a byte slice.
 pub struct SIRD<'a> {
