@@ -1,17 +1,5 @@
 extern crate byteorder;
 
-/// A SIRD record, based from a byte slice.
-pub struct SIRD<'a> {
-    count: u32,
-    data: &'a [u8],
-}
-
-/// A single record into a SIRD file.
-pub struct Record<'a> {
-    name: &'a str,
-    data: &'a [u8],
-}
-
 /// The error type for decoding SIRD files.
 #[derive(Eq, PartialEq, Debug)]
 pub enum Error {
@@ -36,12 +24,24 @@ impl std::fmt::Display for Error {
     }
 }
 
+/// A specialized `Result` type for SIRD operations.
 pub type Result<T> = std::result::Result<T, Error>;
+
+/// A SIRD record, based from a byte slice.
+pub struct SIRD<'a> {
+    count: u32,
+    data: &'a [u8],
+}
+
+/// A single record into a SIRD file.
+pub struct Record<'a> {
+    name: &'a str,
+    data: &'a [u8],
+}
 
 /// The magic number expected to appear at the
 /// start of all SIRD files.
 pub const MAGIC: u32 = 0x53495244;
-
 
 impl<'a> SIRD<'a> {
 
@@ -55,16 +55,18 @@ impl<'a> SIRD<'a> {
             return Err(Error::NotEnoughBytes)
         }
 
-        let mag = BE::read_u32(bs);
-        if mag != MAGIC {
+        let magic = BE::read_u32(bs);
+        if magic != MAGIC {
             return Err(Error::BadMagicNumber)
         }
 
         let count = BE::read_u32(&bs[4..]);
-        Ok(SIRD {
-            count,
-            data: &bs[8..],
-        })
+        Ok(SIRD { count, data: &bs[8..] })
+    }
+
+    /// Returns the number of records that are supposedly in this SIRD
+    pub fn len(&self) -> usize {
+        self.count as usize
     }
 }
 
@@ -88,6 +90,7 @@ mod test {
     fn test_data_len() {
         assert_eq!(SIRD::from_bytes(&R0_2).err(), Some(Error::NotEnoughBytes));
         assert_eq!(SIRD::from_bytes(&R0_3).ok().map(|d| d.count), Some(260));
+        assert_eq!(SIRD::from_bytes(&R0_3).ok().map(|d| d.len()), Some(260));
         assert_eq!(SIRD::from_bytes(&R0_3).ok().map(|d| d.data.len()), Some(2));
         assert_eq!(SIRD::from_bytes(&R0_3).ok().map(|d| d.data[0]), Some(7));
     }
