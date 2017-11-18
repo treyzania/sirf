@@ -1,5 +1,6 @@
 extern crate byteorder;
 use std::borrow::Borrow;
+use std::iter::FromIterator;
 
 /// The error type for decoding SIRD files.
 #[derive(Eq, PartialEq, Debug)]
@@ -109,6 +110,32 @@ impl<'a> SIRD<'a> {
             })
             .unwrap_or(Err(Error::NoSuchRecord))
     }
+
+    /// Build a collection from this SIRD. The collection must be
+    /// some type that supports `FromIterator<(K,V)>`; a common
+    /// choice may be `HashMap`.
+    pub fn build<K: From<&'a str>,
+                 V: From<&'a [u8]>,
+                 C: FromIterator<(K, V)>>(&self) -> Result<C> {
+        self.iter()
+            .map(|maybe_rec| {
+                maybe_rec.map(|rec| (rec.name.into(), rec.data.into()))
+            })
+            .collect()
+    }
+}
+
+impl<'a> Record<'a> {
+
+    /// Returns this record's name.
+    pub fn name(&self) -> &'a str {
+        self.name
+    }
+
+    /// Returns the byte data associated with this record.
+    pub fn data(&self) -> &'a [u8] {
+        self.data
+    }
 }
 
 impl<'a> RecordIterator<'a> {
@@ -158,6 +185,7 @@ impl<'a> Iterator for RecordIterator<'a> {
 #[cfg(test)]
 mod test {
     use super::*;
+    use std::collections::HashMap;
 
     static R0_0: [u8; 8] = [0x53, 0x49, 0x52, 0x44, 0x00, 0x00, 0x00, 0x00];
     static R0_1: [u8; 8] = [0x53, 0x49, 0x52, 0x43, 0x00, 0x00, 0x00, 0x00];
@@ -258,4 +286,15 @@ mod test {
         assert_eq!(result.err(), Some(Error::NotEnoughBytes));
     }
 
+    #[test]
+    fn test_into_hash() {
+        let sird = SIRD::from_bytes(&R2).unwrap();
+        let hm: HashMap<String, Vec<u8>> = sird.build().unwrap();
+        assert_eq!(hm.get("hi"), Some(&vec![123]));
+        assert_eq!(hm.get("sird"), Some(&vec![45, 67]));
+
+        let sird3 = SIRD::from_bytes(&R3).unwrap();
+        let hm3: Result<HashMap<String, Vec<u8>>> = sird3.build();
+        assert_eq!(hm3.err(), Some(Error::NotEnoughBytes));
+    }
 }
