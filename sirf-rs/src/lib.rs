@@ -1,4 +1,5 @@
 extern crate byteorder;
+use std::borrow::Borrow;
 
 /// The error type for decoding SIRD files.
 #[derive(Eq, PartialEq, Debug)]
@@ -11,6 +12,9 @@ pub enum Error {
 
     /// A record name contained invalid UTF-8.
     StringDecodeError,
+
+    /// The desired record does not exist.
+    NoSuchRecord,
 }
 
 impl std::fmt::Display for Error {
@@ -20,6 +24,7 @@ impl std::fmt::Display for Error {
             BadMagicNumber => write!(f, "incorrect magic number in SIRD file"),
             NotEnoughBytes => write!(f, "not enough bytes for record"),
             StringDecodeError => write!(f, "error decoding utf-8 string"),
+            NoSuchRecord => write!(f, "the desired record does not exist"),
         }
     }
 }
@@ -86,6 +91,19 @@ impl<'a> SIRD<'a> {
             data: self.data,
             remaining: self.count as usize,
         }
+    }
+
+    /// Find a record with the given name. If not found, fails with
+    /// `Error::NoSuchRecord`. If decoding fails in the middle, then
+    /// fails with that associated error.
+    pub fn get<S: Borrow<str>>(&self, name: S) -> Result<Record<'a>> {
+        self.iter()
+            .find(|p| {
+                p.as_ref()
+                 .map(|rec| rec.name == name.borrow())
+                 .unwrap_or(true)
+            })
+            .unwrap_or(Err(Error::NoSuchRecord))
     }
 }
 
@@ -216,4 +234,24 @@ mod test {
         assert_eq!(ress.len(), 1);
         assert_eq!(&ress[0].as_ref().err(), &Some(&Error::NotEnoughBytes));
     }
+
+    #[test]
+    fn test_find() {
+        let sird = SIRD::from_bytes(&R2).unwrap();
+        let rec1 = sird.get("hi").unwrap();
+        let rec2 = sird.get("sird").unwrap();
+        let rec3 = sird.get("???");
+
+        assert_eq!(rec1.data, &[123]);
+        assert_eq!(rec2.data, &[45, 67]);
+        assert_eq!(rec3.err(), Some(Error::NoSuchRecord));
+    }
+
+    #[test]
+    fn test_find_malform() {
+        let sird = SIRD::from_bytes(&R3).unwrap();
+        let result = sird.get("hi");
+        assert_eq!(result.err(), Some(Error::NotEnoughBytes));
+    }
+
 }
