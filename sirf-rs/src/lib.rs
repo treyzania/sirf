@@ -29,6 +29,10 @@ impl std::fmt::Display for Error {
     }
 }
 
+impl std::error::Error for Error {
+    fn description(&self) -> &str { "a SIRF error" }
+}
+
 impl From<std::str::Utf8Error> for Error {
     fn from(_: std::str::Utf8Error) -> Self {
         Error::StringDecodeError
