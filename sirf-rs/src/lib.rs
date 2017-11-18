@@ -7,7 +7,7 @@ pub struct SIRD<'a> {
 
 /// A single record into a SIRD file.
 pub struct Record<'a> {
-    name: &'str,
+    name: &'a str,
     data: &'a [u8],
 }
 
@@ -22,6 +22,19 @@ pub enum SIRDError {
     /// A record name contained invalid UTF-8.
     StringDecodeError,
 }
+
+impl std::fmt::Display for SIRDError {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        use self::SIRDError::*;
+        match *self {
+            BadMagicNumber => write!(f, "incorrect magic number in SIRD file"),
+            NotEnoughBytes => write!(f, "not enough bytes for record"),
+            StringDecodeError => write!(f, "error decoding utf-8 string"),
+        }
+    }
+}
+
+pub type Result<T> = std::result::Result<T, SIRDError>;
 
 /// The magic number expected to appear at the
 /// start of all SIRD files.
