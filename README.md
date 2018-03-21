@@ -13,7 +13,7 @@ are supposed to be named with POSIX paths.
 archive.  It is named the same as the directory name, but with the `.sird`
 extension atteched onto the end.
 
-          ## embedbin.sh
+## embedbin.sh
 
 A shell script to turn arbitrary files (in this case, sirf data) into object
 files that can be referenced by C code.  It's a little bit strange, but it's
